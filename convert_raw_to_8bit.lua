@@ -1,18 +1,37 @@
-local filename = assert(arg[1], "\n\nERROR: filename is empty\n")
-local bitdepth = tonumber(arg[2]) or 10   -- Illum mode
-local save_to_pgm = arg[3] or false
+assert(_VERSION == "Lua 5.3")
+
+if arg[4] == nil then print([[
+
+usage:
+
+    lua convert_raw_to_8bit.lua filename width height bitdepth [pgm]
+    
+    filename : path to .lfX file
+    bitdepth : 10 (v2), 12 (v1)
+    pgm      : save in PGM format
+]])
+os.exit()
+end
+
+local filename  = arg[1]
+local width     = tonumber(arg[2])
+local height    = tonumber(arg[3])
+local bitdepth  = tonumber(arg[4])
+local save_to_pgm = arg[5] or false
+
 local sep = "\n-------1-------2-------3-------4-------5-------6-------7-------8-------9-------!"
+
 --
 
 local function parse_raw(mem)
-    local r = io.open(arg[1], "rb")
+    local r = assert(io.open(arg[1], "rb"))
     local content = r:read("a")
     local size = r:seek()
     r:close()
 
     -- try to allocate
     local last = size * 8 // bitdepth
-    mem[last] = 1 >> 0
+    mem[last] = 0
     mem.to8bit = bitdepth - 8
 
     local pos = 1
@@ -76,32 +95,26 @@ local function parse_raw(mem)
 end
 --
 local function convert_to_8bit(mem, pgm)
-    local name = string.sub(filename, 1, -5)
+    local name
     local head = ""
 
     if pgm then
-        name = name .. ".pgm"
-        head = "P5\n%d\n%d\n255\n"
-        if     bitdepth == 10 then
-            head = head:format(7728, 5368)
-        elseif bitdepth == 12 then
-            head = head:format(3280, 3280)
-        else
-            head = head:format(1, 1)
-        end
+        name = string.gsub(filename, ".bin", ".pgm")
+        head = ("P5\n%d\n%d\n255\n"):format(width, height)
     else
-        name = name .. ".raw"
+        name = string.gsub(filename, ".bin", ".raw")
     end
 
     local w = assert(io.open(name, "w+b"))
+    w:write(head)
+    
     local count = #mem
     local shift = mem.to8bit
     local step = count // 80 -- width of console window
     local next_step = step
 
-    w:write(head)
     for j = 1, count do
-        local i = mem[j] >> shift -- fast divide
+        local i = mem[j] >> shift -- fast&dirty divide
         w:write(string.char(i))
 
         -- percentage
