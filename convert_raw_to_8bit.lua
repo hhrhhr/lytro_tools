@@ -4,11 +4,10 @@ if arg[4] == nil then print([[
 
 usage:
 
-    lua convert_raw_to_8bit.lua filename width height bitdepth [pgm]
+    lua convert_raw_to_8bit.lua filename width height bitdepth
     
-    filename : path to .lfX file
+    filename : path to .bin file
     bitdepth : 10 (v2), 12 (v1)
-    pgm      : save in PGM format
 ]])
 os.exit()
 end
@@ -17,7 +16,7 @@ local filename  = arg[1]
 local width     = tonumber(arg[2])
 local height    = tonumber(arg[3])
 local bitdepth  = tonumber(arg[4])
-local save_to_pgm = arg[5] or false
+local save_to_pgm = true --arg[5] or false
 
 local sep = "\n-------1-------2-------3-------4-------5-------6-------7-------8-------9-------!"
 

@@ -7,7 +7,7 @@ usage:
     lua convert_hotpixel_to_1bit.lua filename width height [negative]
     
     filename : path to hotPixelRef.bin
-    negative : white bacground
+    negative : white background
 ]])
 os.exit()
 end
